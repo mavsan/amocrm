@@ -67,7 +67,7 @@ return [
 	'ContactFieldPhoneMOB' => 3972237, // ID поля ENUM - мобильный телефон
 	'ContactFieldPhoneWORK' => 3972233, // ID поля ENUM - рабочий телефон
 	'ContactFieldEmail' => 1426546, // ID поля емейла
-	'LeadFieldCustom' => 1740351, // ID кастомного поля сделки
+	'LeadFieldCustomComment' => 1740351, // ID кастомного поля сделки
 	'LeadFieldCustomValue1' => 4055517, // ID первого значения кастомного поля сделки
 	'LeadFieldCustomValue2' => 4055519 // ID второго значения кастомного поля сделки
 ];
@@ -76,9 +76,9 @@ return [
 Номера полей вашего аккаунта можно получить так:
 
 ```php
-use use \AmoCRM\Account;
-
 require('autoload.php');
+
+use use \AmoCRM\Account;
 
 $api = new Handler('domain', 'user@example.com');
 
@@ -98,13 +98,13 @@ print_r(Account::getAccountInfo($api));
 ### Получение данных
 
 ```php
-use \AmoCRM\Handler;
-
 require('autoload.php');
+
+use \AmoCRM\Handler;
 
 /* Создание экземпляра API, где "domain" - имя вашего домена в AmoCRM, а
 "user@example.com" - email пользователя, от чьего имени будут совершаться запросы */
-$api = new Handler('domain', 'user@example.com', 'путь к файлам конфигурации, если они вынесены отдельно');
+$api = new Handler('domain', 'user@example.com', false, 'путь к файлам конфигурации, если они вынесены отдельно');
 ```
 
 Далее можно использовать один из двух вариантов:
@@ -181,8 +181,8 @@ try
 		->setResponsibleUserId($api->config['ResponsibleUserId'])
 		/* Кастомное поле */
 		->setCustomField(
-			$api->config['LeadFieldCustom'], // ID поля
-			$api->config['LeadFieldCustomValue1'] // ID значения поля
+			$api->config['LeadFieldCustomComment'], // ID поля
+			'значение поля'
 		)
 		/* Теги. Строка - если один тег, массив - если несколько */
 		->setTags(['тег 1', 'тег 2'])
