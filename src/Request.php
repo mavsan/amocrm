@@ -70,7 +70,7 @@ class Request
     {
         if (!is_array($this->params)) {
             if ($this->params instanceof Arrayable) {
-                $this->params = $this->params->toArray();
+                $this->params = [(object)$this->params->toArray()];
             } else {
                 $this->params = [$this->params];
             }
