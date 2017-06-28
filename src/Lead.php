@@ -22,13 +22,17 @@ class Lead extends Entity implements Arrayable
     /** @var  number бюджет сделки */
     public $price;
     /** @var array дополнительные поля сделки */
-    public $custom_fields = [];
-    public $key_name = 'leads';
-    public $url_name = 'leads';
+    public $custom_fields;
     /** @var array теги в виде массива */
-    private $tags_array = [];
+    private $tags_array;
 
-    public function __construct() { }
+    public function __construct()
+    {
+        $this->key_name = 'leads';
+        $this->url_name = $this->key_name;
+        $this->custom_fields = [];
+        $this->tags_array = [];
+    }
 
     /**
      * Наименование сделки
@@ -150,6 +154,8 @@ class Lead extends Entity implements Arrayable
     public function toArray()
     {
         $data = [
+            'id'                  => $this->id,
+            'last_modified'       => $this->last_modified,
             'key_name'            => $this->key_name,
             'url_name'            => $this->url_name,
             'name'                => $this->name,
