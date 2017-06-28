@@ -5,7 +5,9 @@
 
 namespace AmoCRM;
 
-class Lead extends Entity
+use AmoCRM\Interfaces\Arrayable;
+
+class Lead extends Entity implements Arrayable
 {
     /** @var  string наименование сделки */
     public $name;
@@ -15,13 +17,15 @@ class Lead extends Entity
     public $tags;
     /** @var  int ИД статуса сделки */
     public $status_id;
+    /** @var  int ИД воронки продаж, если не в главной воронке */
+    public $pipeline_id;
     /** @var  number бюджет сделки */
     public $price;
     /** @var array дополнительные поля сделки */
     public $custom_fields;
     /** @var array теги в виде массива */
     private $tags_array;
-    
+
     public function __construct()
     {
         $this->key_name = 'leads';
@@ -29,7 +33,7 @@ class Lead extends Entity
         $this->custom_fields = [];
         $this->tags_array = [];
     }
-    
+
     /**
      * Наименование сделки
      *
@@ -40,10 +44,10 @@ class Lead extends Entity
     public function setName($value)
     {
         $this->name = $value;
-        
+
         return $this;
     }
-    
+
     /**
      * ИД ответственного пользователя
      *
@@ -54,10 +58,10 @@ class Lead extends Entity
     public function setResponsibleUserId($value)
     {
         $this->responsible_user_id = $value;
-        
+
         return $this;
     }
-    
+
     /**
      * ИД статуса сделки
      *
@@ -68,10 +72,10 @@ class Lead extends Entity
     public function setStatusId($value)
     {
         $this->status_id = $value;
-        
+
         return $this;
     }
-    
+
     /**
      * Бюджет сделки
      *
@@ -82,10 +86,10 @@ class Lead extends Entity
     public function setPrice($value)
     {
         $this->price = $value;
-        
+
         return $this;
     }
-    
+
     /**
      * Теги
      *
@@ -95,16 +99,16 @@ class Lead extends Entity
      */
     public function setTags($value)
     {
-        if (!is_array($value)) {
+        if (! is_array($value)) {
             $value = [$value];
         }
-        
+
         $this->tags_array = array_merge($this->tags_array, $value);
         $this->tags = implode(',', $this->tags_array);
-        
+
         return $this;
     }
-    
+
     /**
      * Установка дополнительных полей сделки
      *
@@ -120,18 +124,48 @@ class Lead extends Entity
             'id'     => $customFieldID,
             'values' => [],
         ];
-        
+
         $field_value = [];
         $field_value['value'] = $value;
-        
+
         if ($enum) {
             $field_value['enum'] = $enum;
         }
-        
+
         $field['values'][] = $field_value;
-        
+
         $this->custom_fields[] = $field;
-        
+
         return $this;
+    }
+
+    /**
+     * @param int $pipeline_id
+     *
+     * @return $this
+     */
+    public function setPipelineId($pipeline_id)
+    {
+        $this->pipeline_id = $pipeline_id;
+
+        return $this;
+    }
+
+    public function toArray()
+    {
+        $data = [
+            'name'                => $this->name,
+            'responsible_user_id' => $this->responsible_user_id,
+            'tags'                => $this->tags,
+            'status_id'           => $this->status_id,
+            'price'               => $this->price,
+            'custom_fields'       => $this->custom_fields,
+        ];
+
+        if (! empty($this->pipeline_id)) {
+            $data['pipeline_id'] = $this->pipeline_id;
+        }
+
+        return $data;
     }
 }

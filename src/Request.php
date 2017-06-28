@@ -2,6 +2,8 @@
 
 namespace AmoCRM;
 
+use AmoCRM\Interfaces\Arrayable;
+
 class Request
 {
     const AUTH = 1;
@@ -40,16 +42,6 @@ class Request
         }
     }
 
-    public function setIfModifiedSince($if_modified_since)
-    {
-        $this->if_modified_since = $if_modified_since;
-    }
-
-    public function getIfModifiedSince()
-    {
-        return empty($this->if_modified_since) ? false : $this->if_modified_since;
-    }
-
     private function createAuthRequest()
     {
         $this->post = true;
@@ -57,7 +49,7 @@ class Request
 
         $this->params = [
             'USER_LOGIN' => $this->params->user,
-            'USER_HASH' => $this->params->key
+            'USER_HASH'  => $this->params->key,
         ];
     }
 
@@ -68,14 +60,20 @@ class Request
 
     private function createGetRequest()
     {
-        $this->url = 'v2/json/' . $this->object[0] . '/' . $this->object[1];
-        $this->url .= (count($this->params) ? '?' . http_build_query($this->params) : '');
+        $this->url = 'v2/json/'.$this->object[0].'/'.$this->object[1];
+        $this->url .= (count($this->params) ? '?'
+                                              .http_build_query($this->params)
+            : '');
     }
 
     private function createPostRequest()
     {
         if (!is_array($this->params)) {
-            $this->params = [$this->params];
+            if ($this->params instanceof Arrayable) {
+                $this->params = $this->params->toArray();
+            } else {
+                $this->params = [$this->params];
+            }
         }
 
         $key_name = $this->params[0]->key_name;
@@ -89,7 +87,18 @@ class Request
         $this->post = true;
         $this->type = $key_name;
         $this->action = $action;
-        $this->url = 'v2/json/' . $url_name . '/set';
+        $this->url = 'v2/json/'.$url_name.'/set';
         $this->params = $params;
+    }
+
+    public function getIfModifiedSince()
+    {
+        return empty($this->if_modified_since) ? false
+            : $this->if_modified_since;
+    }
+
+    public function setIfModifiedSince($if_modified_since)
+    {
+        $this->if_modified_since = $if_modified_since;
     }
 }
