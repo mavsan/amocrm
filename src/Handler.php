@@ -4,16 +4,26 @@ namespace AmoCRM;
 
 class Handler
 {
-    private $domain;
-    private $debug;
-    private $errors;
-    private $configDir;
-
+    // домен для формирования адреса обращений к API
     public $user;
+    // режим отладки
     public $key;
+    // ошибки
     public $config;
+    // папка, откуда читать файл конфигурации
     public $result;
+    // пользователь, для логина в API
+    public $resultCode;
+    // ключ для логина в API
     public $last_insert_id;
+    // данные из конфигурационного файла
+    private $domain;
+    // результат, полученный от сервера
+    private $debug;
+    // код ответа сервера
+    private $errors;
+    // ид последней добавленной записи, или false
+    private $configDir;
 
     public function __construct($domain = null, $user = null, $debug = false, $configDir = '')
     {
@@ -96,7 +106,9 @@ class Handler
 
         $this->result = json_decode($result);
 
-        if (floor($info['http_code'] / 100) >= 3) {
+        $this->resultCode = $info['http_code'];
+
+        if (floor($this->resultCode / 100) >= 3) {
             if (!$this->debug) {
                 $message = $this->result->response->error;
             } else {
@@ -106,8 +118,8 @@ class Handler
                 $response = (isset($this->result->response->error)) ? $this->result->response->error : '';
 
                 $message = json_encode([
-                    'http_code' => $info['http_code'],
-                    'response' => $response,
+                    'http_code'   => $this->resultCode,
+                    'response'    => $response,
                     'description' => $description
                 ], JSON_UNESCAPED_UNICODE);
             }

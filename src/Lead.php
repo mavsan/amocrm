@@ -5,6 +5,7 @@
 
 namespace AmoCRM;
 
+use AmoCRM\Helpers\CustomFields;
 use AmoCRM\Interfaces\Arrayable;
 
 class Lead extends Entity implements Arrayable
@@ -21,17 +22,78 @@ class Lead extends Entity implements Arrayable
     public $pipeline_id;
     /** @var  number бюджет сделки */
     public $price;
-    /** @var array дополнительные поля сделки */
-    public $custom_fields;
     /** @var array теги в виде массива */
     private $tags_array;
 
-    public function __construct()
+    use CustomFields;
+
+    public function __construct(\stdClass $searchResult = null)
     {
         $this->key_name = 'leads';
         $this->url_name = $this->key_name;
         $this->custom_fields = [];
         $this->tags_array = [];
+
+        if (! is_null($searchResult)) {
+            // экземпляр создается на основе найденного результата
+            $this->fillDataFromSearchResult($searchResult);
+
+            $this->setUpdateIncrementLastModified();
+        }
+    }
+
+    /**
+     * Создание класса из данных найденного контакта
+     *
+     * @param \stdClass $searchResult
+     */
+    protected function fillDataFromSearchResult(\stdClass $searchResult)
+    {
+        $this->id = $searchResult->id;
+        $this->name = $searchResult->name;
+        $this->last_modified = $searchResult->last_modified;
+        $this->status_id = $searchResult->status_id;
+        $this->price = $searchResult->price;
+        $this->responsible_user_id = $searchResult->responsible_user_id;
+
+        $this->fillDataFromSearchResultTags($searchResult);
+        $this->fillDataFromSearchResultCustomFields($searchResult);
+    }
+
+    /**
+     * Создание класса из данных найденного контакта, теги
+     *
+     * @param \stdClass $searchResult
+     */
+    protected function fillDataFromSearchResultTags(\stdClass $searchResult)
+    {
+        $tags = [];
+        if (property_exists($searchResult, 'tags')) {
+            foreach ((array)$searchResult->tags as $tag) {
+                $tags[] = $tag->name;
+            }
+        }
+
+        $this->setTags($tags);
+    }
+
+    /**
+     * Теги
+     *
+     * @param string|array $value
+     *
+     * @return $this
+     */
+    public function setTags($value)
+    {
+        if (! is_array($value)) {
+            $value = [$value];
+        }
+
+        $this->tags_array = array_merge($this->tags_array, $value);
+        $this->tags = implode(',', $this->tags_array);
+
+        return $this;
     }
 
     /**
@@ -86,55 +148,6 @@ class Lead extends Entity implements Arrayable
     public function setPrice($value)
     {
         $this->price = $value;
-
-        return $this;
-    }
-
-    /**
-     * Теги
-     *
-     * @param string|array $value
-     *
-     * @return $this
-     */
-    public function setTags($value)
-    {
-        if (! is_array($value)) {
-            $value = [$value];
-        }
-
-        $this->tags_array = array_merge($this->tags_array, $value);
-        $this->tags = implode(',', $this->tags_array);
-
-        return $this;
-    }
-
-    /**
-     * Установка дополнительных полей сделки
-     *
-     * @param int         $customFieldID ИД дополнительного поля
-     * @param string      $value         значение дополнительного поля
-     * @param bool|string $enum          ENUM этого поля
-     *
-     * @return $this
-     */
-    public function setCustomField($customFieldID, $value, $enum = false)
-    {
-        $field = [
-            'id'     => $customFieldID,
-            'values' => [],
-        ];
-
-        $field_value = [];
-        $field_value['value'] = $value;
-
-        if ($enum) {
-            $field_value['enum'] = $enum;
-        }
-
-        $field['values'][] = $field_value;
-
-        $this->custom_fields[] = $field;
 
         return $this;
     }
