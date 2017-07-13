@@ -284,6 +284,30 @@ try
 
 ```
 
+###Поиск и обновление лида
+Выполняется по принципу поиска и обновления контакта:
+
+```php
+// получение экземпляра
+$api = new Handler('domain', 'homer@simpson.com', false, __DIR__ . '/config');
+
+$leadList = new LeadList();
+$result = $leadList->getByID($api, 'ИДИскомогоЛида');
+if ($result !== false) {
+    /** @var \AmoCRM\Lead $lead */
+    $lead = $result[0];
+    $lead->setTags('новый тег');
+    $lead->setName('новое название сделки');
+    $lead->setResponsibleUserId('ид другого ответсвенного пользователя');
+    $lead->setPrice('новая цена');
+    $lead->setPipelineId('ид новой воронки');
+    $lead->setCustomField('идДополнительногоПоля', 'значение', 'enum');
+    
+    // отправить данные
+    $api->request(new Request(Request::SET, $lead));
+}
+```
+
 ### Обновление дополнительных полей контакта
 Обратите внимание на тот факт, что в информации о контакте в дополнительных полях вместо `ENUM` возвращается код этого 
 `ENUM`, например у меня для телефонов:
